@@ -18,7 +18,7 @@ import handlers_form
 
 
 def get_api_token(key):
-    dotenv_path = join(dirname(__file__), 'token.env')
+    dotenv_path = join(dirname(__file__), '.env')
     load_dotenv(dotenv_path)
     return os.environ.get(key)
 
