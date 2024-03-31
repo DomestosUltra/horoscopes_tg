@@ -1,30 +1,16 @@
 from aiogram import Bot, Dispatcher
-from aiogram.types import ContentType
 import asyncio
 import logging
 from dotenv import load_dotenv
-from datetime import datetime
-
-from aiogram import F
-from aiogram import Bot, Dispatcher, types
-from aiogram.enums.dice_emoji import DiceEmoji
-from aiogram.filters.command import Command
 import os
-from os.path import join, dirname
 
 import handlers
 import handlers_subscribe
 import handlers_form
 
+load_dotenv()
 
-def get_api_token(key):
-    dotenv_path = join(dirname(__file__), '.env')
-    load_dotenv(dotenv_path)
-    return os.environ.get(key)
-
-
-# Токен бота
-API_TOKEN = get_api_token('API_TOKEN')
+API_TOKEN = os.getenv('API_TOKEN', '')
 
 # Инициализация бота и диспетчера
 logging.basicConfig(level=logging.INFO)
