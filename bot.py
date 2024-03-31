@@ -1,12 +1,13 @@
-from aiogram import Bot, Dispatcher
 import asyncio
 import logging
-from dotenv import load_dotenv
 import os
 
+from aiogram import Bot, Dispatcher
+from dotenv import load_dotenv
+
 import handlers
-import handlers_subscribe
 import handlers_form
+import handlers_subscribe
 
 load_dotenv()
 
@@ -34,4 +35,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

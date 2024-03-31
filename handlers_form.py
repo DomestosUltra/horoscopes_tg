@@ -1,15 +1,11 @@
-from aiogram import F, Router, types
-from aiogram.filters.command import Command
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import default_state
-from aiogram.filters.state import StateFilter, StatesGroup, State
-from aiogram.utils.keyboard import InlineKeyboardButton, InlineKeyboardMarkup, InlineKeyboardBuilder
 from datetime import datetime
-from handlers_subscribe import subscribe
-from aiogram.enums.content_type import ContentType
+
+from aiogram import F, Router, types
+from aiogram.filters.state import State, StateFilter, StatesGroup
+from aiogram.fsm.context import FSMContext
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
+
 import keyboards
-import bot
-from pprint import pprint
 
 router = Router()
 
@@ -107,8 +103,14 @@ async def confrim_form(in_qr: types.CallbackQuery, state: FSMContext):
             s += f'{c} ✅\n'
         else:
             s += f'{c} 🚫\n'
-    form = f"Имя: {user_data['name']}\nДата рождения: {user_data['date_born']}\nПол: {gender}\nВыбранные категории:\n{s[:-1]}"
+    form = f"""
+    Имя: {user_data['name']}
+    Дата рождения: {user_data['date_born']}
+    Пол: {gender}\nВыбранные категории: \n {s[:-1]}
+    """
 
     # load data base
-    await in_qr.message.edit_text(text=f'Ваша анкета\n{form}', reply_markup=keyboards.back_1())
-
+    await in_qr.message.edit_text(
+        text=f'Ваша анкета\n{form}',
+        reply_markup=keyboards.back_1()
+    )

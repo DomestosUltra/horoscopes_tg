@@ -1,15 +1,10 @@
 from aiogram import F, Router, types
-from aiogram.filters.command import Command
+from aiogram.filters.state import State, StateFilter, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
-from aiogram.filters.state import StateFilter, StatesGroup, State
-from aiogram.utils.keyboard import InlineKeyboardButton, InlineKeyboardMarkup, InlineKeyboardBuilder
-from datetime import datetime
-from aiogram.enums.content_type import ContentType
+
 import keyboards
 from handlers_form import FORM
-import bot
-from pprint import pprint
 
 router = Router()
 
@@ -154,4 +149,3 @@ async def load_form(in_qr: types.CallbackQuery, state: FSMContext):
 async def back2main(in_qr: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await in_qr.message.edit_text(text='Главное меню', reply_markup=keyboards.main_inline_kb())
-

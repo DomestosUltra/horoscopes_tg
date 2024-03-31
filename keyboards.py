@@ -1,5 +1,4 @@
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder, ReplyKeyboardMarkup, KeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 
 
 def main_inline_kb() -> InlineKeyboardMarkup:
@@ -55,5 +54,3 @@ def choose_sub() -> InlineKeyboardBuilder:
     bd.button(text='Назад', callback_data='back_1')
     bd.adjust(1, 1)
     return bd
-
-
