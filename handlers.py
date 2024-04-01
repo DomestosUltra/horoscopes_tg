@@ -22,17 +22,6 @@ class MAINSTATES(StatesGroup):
     rate = State()
 
 
-# class FORM(StatesGroup):
-#     name = State()
-#     age = State()
-#     gender = State()
-#     cat = State()
-
-
-# @router.message(StateFilter(default_state), Command('main'))
-# async def sent_main_kb(message: types.Message):
-#     await message.answer(text='main', reply_markup=keyboards.main_inline_kb())
-
 @router.message(StateFilter(default_state))
 async def echo_main(message: types.Message):
     await message.answer(text='Главное меню', reply_markup=keyboards.main_inline_kb())
