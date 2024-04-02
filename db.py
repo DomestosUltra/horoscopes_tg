@@ -1,9 +1,10 @@
 import asyncio
 
 from sqlalchemy import ARRAY, DATE, Boolean, Column, ForeignKey, Integer, Text
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.future import select
 
 # psycopg
 
@@ -45,18 +46,61 @@ class Horo(Base):
     horo_arr = Column(ARRAY(Text), nullable=False)
 
 
+async def create_tables():
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def add_user(user_data: dict):
+    """
+    Добавляет пользователя с заданными данными в базу данных.
+    :param user_data: Словарь с данными пользователя.
+    """
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            # Создание нового экземпляра пользователя
+            new_user = User(**user_data)
+            session.add(new_user)
+        await session.commit()
+        return new_user
+
+
+async def update_form_complete(user_id: int, form_complete: bool):
+    """
+    Обновляет статус form_complete для пользователя с указанным user_id.
+    :param user_id: ID пользователя.
+    :param form_complete: Новое значение для поля form_complete.
+    """
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            # Запрос пользователя по ID
+            query = select(User).where(User.user_id == user_id)
+            result = await session.execute(query)
+            user = result.scalars().first()
+            if user:
+                # Обновление поля form_complete
+                user.form_complete = form_complete
+                await session.commit()
+                return True
+            else:
+                return False
+
 # dialect+driver://username:password@host:port/database
 async_engine = create_async_engine(url="postgresql+asyncpg://horo_tg:1111qwert@localhost:5432/horo_tg", echo=True
                                    # pool_size=5,
                                    # max_overflow=10)
                                    )
+AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+
+# async def foo(some: Any):
+#   # создаем транзакцию
+#   async with SessionLocal() as s:
+#     some_do(some)
+#     await db.commit()
 
 
-async def create_tables():
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+async def async_main():
+    pass
 
-asyncio.run(create_tables())
-# engine.connect()
-# print(Base.metadata.create_all(engine))
-print(async_engine)
+
+asyncio.run(async_main())
