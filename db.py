@@ -1,42 +1,70 @@
+# Rename to models.py
+
 import asyncio
-import types
 
-from sqlalchemy import ARRAY, DATE, Boolean, Column, ForeignKey, Integer, Text
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+import sqlalchemy.types as types
+from sqlalchemy import (ARRAY, Boolean, Column, Date, ForeignKey,
+                        Integer, String, Text)
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.future import select
+from sqlalchemy.orm import relationship
 
-# psycopg
-
+STRING_MAX_LENGTH = 64
 
 Base = declarative_base()
+
+
+class ChoiceType(types.TypeDecorator):
+    impl = types.String
+
+    def __init__(self, choices, **kw):
+        self.choices = dict(choices)
+        super(ChoiceType, self).__init__(**kw)
+
+    def process_bind_param(self, value, dialect):
+        return [k for k, v in self.choices.iteritems() if v == value][0]
+
+    def process_result_value(self, value, dialect):
+        return self.choices[value]
 
 
 class User(Base):
     __tablename__ = 'user'
 
-    user_id = Column(Integer, ForeignKey('user.user_id'), primary_key=True)
-    form_complete = Column(Boolean, nullable=False)
+    first_name = Column(String, nullable=False, length=STRING_MAX_LENGTH)
+    second_name = Column(String, nullable=False, length=STRING_MAX_LENGTH)
+    last_name = Column(String, nullable=False, length=STRING_MAX_LENGTH)
+    date_of_birth = Column(Date, nullable=False, )
+    gender = Column(
+        ChoiceType(
+            {'M': 'Male',
+             'F': 'Female'}
+        ),
+        nullable=False
+    )
     form_data = relationship('Form', back_populates='user')
+
+
+class FormStatus(Base):
+    __tablename__ = 'form_status'
+    form = relationship('Form', back_populates='')
+    form_complete = Column(Boolean, nullable=False)
 
 
 class Form(Base):
     __tablename__ = 'form'
 
-    user_id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(Integer, nullable=False)
-    age = Column(Integer, nullable=False)
-    gender = Column(Boolean, nullable=False)
-    date_born = Column(DATE, nullable=False)
     user = relationship('User', back_populates='form_data')
+    form_status = Column()
 
 
 class Subscribe(Base):
     __tablename__ = 'subscribe'
 
     user_id = Column(Integer, primary_key=True, autoincrement=True)
-    date_sub = Column(DATE, nullable=False)
+    date_sub = Column(Date, nullable=False)
     level_sub = Column(Integer, nullable=False)
 
 
@@ -86,17 +114,21 @@ async def update_form_complete(user_id: int, form_complete: bool):
             else:
                 return False
 
+
 # dialect+driver://username:password@host:port/database
-async_engine = create_async_engine(url="postgresql+asyncpg://horo_tg:1111qwert@localhost:5432/horo_tg", echo=True)
-AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+async_engine = create_async_engine(
+    url="postgresql+asyncpg://horo_tg:1111qwert@localhost:5432/horo_tg",
+    echo=True)
+AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession,
+                                       expire_on_commit=False)
 
 
-    # async def foo(some:types.FunctionType):
-    #     AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
-    #     # создаем транзакцию
-    #     async with AsyncSessionLocal() as s:
-    #         some_do(some)
-    #     await s.commit()
+# async def foo(some:types.FunctionType):
+#     AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+#     # создаем транзакцию
+#     async with AsyncSessionLocal() as s:
+#         some_do(some)
+#     await s.commit()
 
 class CRUD:
     def __init__(self):
@@ -115,7 +147,8 @@ class CRUD:
         """Получает информацию о пользователе по ID."""
         async with AsyncSessionLocal() as session:
             async with session.begin():
-                result = await session.execute(select(User).where(User.user_id == user_id))
+                result = await session.execute(
+                    select(User).where(User.user_id == user_id))
                 user = result.scalars().first()
             return user
 
