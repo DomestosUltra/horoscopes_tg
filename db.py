@@ -1,4 +1,5 @@
 import asyncio
+import types
 
 from sqlalchemy import ARRAY, DATE, Boolean, Column, ForeignKey, Integer, Text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -86,21 +87,45 @@ async def update_form_complete(user_id: int, form_complete: bool):
                 return False
 
 # dialect+driver://username:password@host:port/database
-async_engine = create_async_engine(url="postgresql+asyncpg://horo_tg:1111qwert@localhost:5432/horo_tg", echo=True
-                                   # pool_size=5,
-                                   # max_overflow=10)
-                                   )
+async_engine = create_async_engine(url="postgresql+asyncpg://horo_tg:1111qwert@localhost:5432/horo_tg", echo=True)
 AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
-# async def foo(some: Any):
-#   # создаем транзакцию
-#   async with SessionLocal() as s:
-#     some_do(some)
-#     await db.commit()
+
+    # async def foo(some:types.FunctionType):
+    #     AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+    #     # создаем транзакцию
+    #     async with AsyncSessionLocal() as s:
+    #         some_do(some)
+    #     await s.commit()
+
+class CRUD:
+    def __init__(self):
+        pass
+
+    async def create_user(self, user_data: dict):
+        """Добавляет нового пользователя в базу данных."""
+        async with AsyncSessionLocal() as session:
+            async with session.begin():
+                new_user = User(**user_data)
+                session.add(new_user)
+            await session.commit()
+            return new_user
+
+    async def get_user(self, user_id: int):
+        """Получает информацию о пользователе по ID."""
+        async with AsyncSessionLocal() as session:
+            async with session.begin():
+                result = await session.execute(select(User).where(User.user_id == user_id))
+                user = result.scalars().first()
+            return user
 
 
-async def async_main():
-    pass
+async def main():
+    crud = CRUD()
+
+    # Создание таблиц
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
-asyncio.run(async_main())
+asyncio.run(main())

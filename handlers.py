@@ -2,6 +2,7 @@ from aiogram import F, Router, types
 from aiogram.filters.state import State, StateFilter, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
+from aiogram.filters.command import Command, CommandStart
 
 import keyboards
 from handlers_form import FORM
@@ -20,6 +21,16 @@ class MAINSTATES(StatesGroup):
     form = State()
     subs = State()
     rate = State()
+
+
+@router.message(CommandStart())
+async def get_user_id(message: types.Message):
+    user_id = message.chat.id
+    form_complete = 0
+    date_complete = message.date
+    await message.answer(text=f'id: {user_id}\n'
+                              f'date: {date_complete}\n'
+                              f'form_complete: {form_complete}')
 
 
 @router.message(StateFilter(default_state))
